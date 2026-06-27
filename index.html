@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Zozzo — Bop-a-Mole</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <section id="splash" class="screen active">
+      <h1 class="title">Zozzo</h1>
+      <p class="subtitle">Choose a game</p>
+      <div class="highscore">Best: <span id="best-score">0</span></div>
+      <div class="game-list">
+        <button id="start-bop" class="game-btn">Bop-a-Mole</button>
+      </div>
+      <p class="small">Tap Start to play — optimized for mobile.</p>
+    </section>
+
+    <section id="game" class="screen">
+      <header class="game-header">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="timer">Time: <span id="time">30</span>s</div>
+        <div class="lights" aria-hidden="true">
+          <div class="light-item"><span class="light red"></span><small>Red +1</small></div>
+          <div class="light-item"><span class="light yellow"></span><small>Yellow +1</small></div>
+          <div class="light-item"><span class="light purple"></span><small>Purple -5</small></div>
+        </div>
+      </header>
+      <div id="board" class="board" aria-live="polite"></div>
+      <div class="controls">
+        <button id="btn-pause">Pause</button>
+        <button id="btn-quit">Quit</button>
+      </div>
+    </section>
+
+    <section id="score-screen" class="screen">
+      <h2>Final Score</h2>
+      <div id="new-high" class="new-high sr-only">NEW HIGH SCORE!</div>
+      <div class="final-score" id="final-score">0</div>
+      <div class="score-actions">
+        <button id="play-again">Play Again</button>
+        <a id="deploy-link" href="/zozzo" class="link">Open on site</a>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/game.js" defer></script>
+</body>
+</html>

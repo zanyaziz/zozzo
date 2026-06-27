@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@keyframes zozzoPulse { 0%,100% { filter: brightness(0.75) saturate(0.9); } 50% { filter: brightness(1.15) saturate(1.25); } }
+@keyframes zozzoBreathe { 0%,100% { transform: scale(0.97); } 50% { transform: scale(1.03); } }
+</style>
+</helmet>
+<div style="{{ outerStyle }}">
+  <div style="{{ bodyStyle }}">
+    <div style="{{ gridStyle }}">
+      <sc-for list="{{ buttons }}" as="btn" hint-placeholder-count="10">
+        <div style="{{ btn.cell }}">
+          <div style="{{ btn.dome }}"></div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:420,&quot;height&quot;:210},&quot;palette&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;states&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number[]&quot;},&quot;orientation&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;landscape&quot;,&quot;portrait&quot;],&quot;default&quot;:&quot;landscape&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;rim&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#8E0B81&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;glow&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:0,&quot;max&quot;:1.6,&quot;step&quot;:0.1,&quot;default&quot;:1,&quot;tsType&quot;:&quot;number&quot;},&quot;animate&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;none&quot;,&quot;rainbow&quot;],&quot;default&quot;:&quot;none&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const DEFAULT_PALETTE = ["#FF2D9B","#F2F2F2","#FF8A00","#21C24A","#2E7BFF","#12C9D6","#FFC400","#7BD636","#FF3B3B","#9B45FF"];
+
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props || {};
+    const palette = p.palette || DEFAULT_PALETTE;
+    const states = p.states || [1,1,1,1,1,1,1,1,1,1];
+    const theme = p.theme || "light";
+    const rim = p.rim || (theme === "dark" ? "#3a2150" : "#8E0B81");
+    const glow = p.glow == null ? 1 : p.glow;
+    const animate = p.animate || "none";
+    const radius = p.radius || "10%";
+    const portrait = p.orientation === "portrait";
+
+    const bodyBg = theme === "dark"
+      ? "linear-gradient(180deg,#23263b,#161827)"
+      : "linear-gradient(180deg,#ffffff,#f1f1f4)";
+    const bodyInset = theme === "dark"
+      ? "inset 0 2px 0 #ffffff14, inset 0 -10px 24px rgba(0,0,0,.45)"
+      : "inset 0 2px 0 #ffffff, inset 0 -12px 26px rgba(0,0,0,.06)";
+
+    const outerStyle = {
+      width: "100%", borderRadius: radius, padding: "2.6%",
+      background: `linear-gradient(180deg, ${rim}, ${this.shade(rim,-18)})`,
+      boxShadow: theme === "dark"
+        ? "0 30px 60px -20px rgba(0,0,0,.6)"
+        : "0 26px 50px -22px rgba(40,20,60,.35)",
+      boxSizing: "border-box"
+    };
+    const bodyStyle = {
+      width: "100%", aspectRatio: portrait ? "452 / 1000" : "1000 / 452",
+      borderRadius: `calc(${radius} - 4px)`,
+      background: bodyBg, boxShadow: bodyInset,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: portrait ? "3.0% 4.6%" : "3.4% 3.0%", boxSizing: "border-box"
+    };
+    const gridStyle = {
+      width: "100%", height: "100%", display: "grid",
+      gridTemplateColumns: portrait ? "repeat(2,1fr)" : "repeat(5,1fr)",
+      gridTemplateRows: portrait ? "repeat(5,1fr)" : "repeat(2,1fr)",
+      gap: "4%", placeItems: "center"
+    };
+
+    const buttons = palette.map((c, i) => {
+      const on = !!states[i];
+      const cell = { width: "100%", aspectRatio: "1", display: "flex", alignItems: "center", justifyContent: "center" };
+      let dome;
+      if (on) {
+        dome = {
+          width: "92%", aspectRatio: "1", borderRadius: "50%", boxSizing: "border-box",
+          background: `radial-gradient(circle at 36% 28%, #ffffffdd, ${c} 46%, ${this.shade(c,-26)} 100%)`,
+          boxShadow: `0 0 ${20*glow}px ${5*glow}px ${this.alpha(c,0.85)}, 0 0 ${48*glow}px ${10*glow}px ${this.alpha(c,0.45)}, inset 0 -7px 12px rgba(0,0,0,.28), inset 0 5px 10px #ffffff66`
+        };
+      } else {
+        const offBg = theme === "dark"
+          ? `radial-gradient(circle at 36% 30%, #ffffff14, ${this.alpha(c,0.16)} 60%, ${this.alpha(c,0.28)})`
+          : `radial-gradient(circle at 36% 28%, #ffffffee, ${this.alpha(c,0.28)} 64%, ${this.alpha(c,0.42)})`;
+        dome = {
+          width: "92%", aspectRatio: "1", borderRadius: "50%", boxSizing: "border-box",
+          background: offBg,
+          boxShadow: theme === "dark"
+            ? "inset 0 -6px 11px rgba(0,0,0,.5), inset 0 4px 8px #ffffff10"
+            : "inset 0 -6px 11px rgba(0,0,0,.12), inset 0 4px 8px #ffffffcc"
+        };
+      }
+      if (animate === "rainbow" && on) {
+        dome.animation = `zozzoPulse 2.4s ease-in-out ${(i*0.16).toFixed(2)}s infinite`;
+      }
+      return { cell, dome, key: i };
+    });
+
+    return { outerStyle, bodyStyle, gridStyle, buttons };
+  }
+
+  shade(hex, pct) {
+    const { r, g, b } = this.toRgb(hex);
+    const f = pct < 0 ? 0 : 255, t = Math.abs(pct) / 100;
+    const mix = (x) => Math.round((f - x) * t + x);
+    return `rgb(${mix(r)},${mix(g)},${mix(b)})`;
+  }
+  alpha(hex, a) {
+    const { r, g, b } = this.toRgb(hex);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  toRgb(hex) {
+    let h = (hex || "#000").replace("#", "");
+    if (h.length === 3) h = h.split("").map(c => c + c).join("");
+    return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+  }
+}
+</script>
+</body>
+</html>
