@@ -182,6 +182,13 @@ function makeBoard(){
   board.style.justifyContent = 'center';
   board.style.alignContent = 'center';
 
+  // set board width and center it to avoid horizontal overflow on iOS
+  const boardWidth = (cell * cols) + (gap * (cols - 1));
+  board.style.width = `${Math.min(boardWidth, availableW)}px`;
+  board.style.maxWidth = '100%';
+  board.style.marginLeft = 'auto';
+  board.style.marginRight = 'auto';
+
   for(let i=0;i<count;i++){
     const hole = document.createElement('div');
     hole.className = 'hole';

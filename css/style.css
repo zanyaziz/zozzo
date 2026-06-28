@@ -10,7 +10,8 @@
 }
 *{box-sizing:border-box}
 html,body,#app{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
-body{background:radial-gradient(circle at top center, rgba(76,111,232,0.18), transparent 24%), linear-gradient(180deg,#0a1430 0%,#0c193d 100%);color:var(--text);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:18px}
+.app-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center}
+body{background:radial-gradient(circle at top center, rgba(76,111,232,0.18), transparent 24%), linear-gradient(180deg,#0a1430 0%,#0c193d 100%);color:var(--text);min-height:100vh;padding:env(safe-area-inset-top,18px) env(safe-area-inset-right,18px) 18px env(safe-area-inset-left,18px);overflow-x:hidden}
 .screen{display:none;width:100%;max-width:760px;padding:24px;visibility:hidden;opacity:0;transform:translateY(8px);transition:opacity 240ms ease,transform 240ms ease,visibility 240ms}
 .screen.active{display:block;visibility:visible;opacity:1;transform:translateY(0)}
 .title{font-size:2.8rem;margin:0;text-align:left;letter-spacing:-0.04em}
