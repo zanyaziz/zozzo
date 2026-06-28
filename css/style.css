@@ -50,3 +50,5 @@ button{cursor:pointer}
 .game-header .score,.game-header .timer{background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:8px}
 
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.site-footer{color:var(--muted);text-align:center;padding:12px 0;font-size:0.85rem}

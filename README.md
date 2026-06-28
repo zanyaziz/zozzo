@@ -128,3 +128,7 @@ The app is mobile-first and optimized for touch; open the same URL on a phone on
 
 ## Deploy
 Build and copy the contents of this folder to the `zanyaziz.com/zozzo` path on your hosting server (or configure your webserver to serve this folder at `/zozzo`). If you prefer to use the included Node server, ensure `node` is available and run it behind a reverse proxy to serve `/zozzo` in production.
+
+---
+
+Version: 0.03
