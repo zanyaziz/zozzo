@@ -2,9 +2,9 @@
 
 This document breaks the Zozzo project into concrete milestones, design-focused UI tasks, and implementation work for the Claude-based game experience.
 
-## Current milestone: Milestone 2 — Claude UI fidelity
+## Current milestone: Milestone 5 — Deployment and production readiness
 
-Focus: polish the mobile UI, recreate the Claude screen look and feel, and complete the game board layout.
+Focus: prepare the app for live hosting at `zanyaziz.com/zozzo`, sync release metadata, and document deploy commands.
 
 ## Milestone 1 — UI foundation and core flow
 

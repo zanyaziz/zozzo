@@ -127,11 +127,37 @@ npm start
 The app is mobile-first and optimized for touch; open the same URL on a phone on your local network to test.
 
 ## Deploy
-Build and copy the contents of this folder to the `zanyaziz.com/zozzo` path on your hosting server (or configure your webserver to serve this folder at `/zozzo`). If you prefer to use the included Node server, ensure `node` is available and run it behind a reverse proxy to serve `/zozzo` in production.
+This repo includes both a deploy script and a GitHub Actions workflow for pushing the site to a remote host.
+
+### Current release
+- UI version: `v0.05`
+- Package version: `0.0.5`
+- Release notes: [CHANGELOG.md](CHANGELOG.md)
+
+### Local SSH deploy
+Set your environment and run:
+```bash
+SSH_USER=you SSH_HOST=host.example.com REMOTE_PATH=/var/www/zanyaziz.com/zozzo npm run deploy
+```
+
+### GitHub Actions deploy
+Add these secrets to the repository settings:
+- `SSH_PRIVATE_KEY`
+- `DEPLOY_USER`
+- `DEPLOY_HOST`
+- `DEPLOY_PATH`
+
+Then push to `main` and the workflow in `.github/workflows/deploy.yml` will sync the repo files to the configured remote path.
+
+> Note: the app serves correctly from `/zozzo` when deployed with the included `server.js` or via a static host configured to serve this folder at `/zozzo`.
+
+## Versioning policy
+Every new feature release increments the public UI version in the app footer and the package version.
+Keep `version.json` in sync with `index.html` and `package.json` when adding new features.
 
 ## Project plan
 For roadmap, milestones, and tracked work, see [ProjectPlan.md](ProjectPlan.md).
 
 ---
 
-Version: 0.03
+Version: 0.05

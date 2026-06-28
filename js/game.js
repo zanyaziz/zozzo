@@ -15,7 +15,10 @@ const timeEl = qs('#time');
 const finalScoreEl = qs('#final-score');
 const bestScoreEl = qs('#best-score');
 const newHighEl = qs('#new-high');
+const versionEl = qs('#app-version');
+const statusEl = qs('#game-status');
 const playAgain = qs('#play-again');
+const scoreHome = qs('#score-home');
 const btnQuit = qs('#btn-quit');
 const btnPause = qs('#btn-pause');
 
@@ -35,6 +38,13 @@ function ensureAudio(){
   try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
 }
 
+function resetPauseState(){
+  if(btnPause){
+    btnPause.dataset.paused = '0';
+    btnPause.textContent = 'Pause';
+  }
+}
+
 function playHitSound(){
   ensureAudio();
   if(!audioCtx) return;
@@ -42,12 +52,47 @@ function playHitSound(){
   const o = audioCtx.createOscillator();
   const g = audioCtx.createGain();
   o.type = 'square';
-  o.frequency.setValueAtTime(600, t);
+  o.frequency.setValueAtTime(720, t);
   g.gain.setValueAtTime(0.0001, t);
-  g.gain.exponentialRampToValueAtTime(0.08, t + 0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+  g.gain.linearRampToValueAtTime(0.12, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
   o.connect(g); g.connect(audioCtx.destination);
-  o.start(t); o.stop(t + 0.15);
+  o.start(t); o.stop(t + 0.18);
+}
+
+function playMissSound(){
+  ensureAudio();
+  if(!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(180, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.08, t + 0.06);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t); o.stop(t + 0.22);
+}
+
+function playPenaltySound(){
+  ensureAudio();
+  if(!audioCtx) return;
+  const t = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(280, t);
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.1, t + 0.04);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.20);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t); o.stop(t + 0.20);
+}
+
+function announce(message){
+  if(!statusEl) return;
+  statusEl.textContent = message;
 }
 
 function vibrateShort(){
@@ -71,17 +116,32 @@ function updateBestUI(){
   if(bestScoreEl) bestScoreEl.textContent = String(best);
 }
 
+function loadAppVersion(){
+  if(!versionEl) return;
+  fetch('version.json')
+    .then(resp => resp.json())
+    .then(data => {
+      if(data && data.version){
+        versionEl.textContent = data.version;
+      }
+    })
+    .catch(()=>{});
+}
+
 function makeBoard(){
   // always render exactly 10 buttons; choose columns responsively
   const w = window.innerWidth;
   const h = window.innerHeight;
   const portrait = h > w;
-  // if portrait (mobile), use 5 columns to form 2 rows of 5
-  let cols = portrait ? 5 : 4;
+  // portrait mobile should use a 2×5 grid; landscape uses 5×2
+  let cols = portrait ? 2 : 5;
   if(w >= 900) cols = 5; // wide desktop
   const count = 10;
+  const rows = Math.ceil(count / cols);
   board.innerHTML = '';
   board.style.gridTemplateColumns = `repeat(${cols},1fr)`;
+  board.style.gridTemplateRows = `repeat(${rows},1fr)`;
+  board.style.maxWidth = portrait ? '92vw' : '96vw';
   for(let i=0;i<count;i++){
     const hole = document.createElement('div');
     hole.className = 'hole';
@@ -89,6 +149,7 @@ function makeBoard(){
     const mole = document.createElement('div');
     mole.className = 'mole';
     mole.setAttribute('role','button');
+    mole.setAttribute('tabindex','0');
     mole.setAttribute('aria-pressed','false');
     hole.appendChild(mole);
     board.appendChild(hole);
@@ -128,8 +189,9 @@ function popMole(){
     mole.classList.add(color,'up');
     mole.setAttribute('data-color', color);
     mole.setAttribute('aria-pressed','false');
+    mole.setAttribute('aria-label', `${color} target, tap to hit`);
     highlightColorIndicator(color);
-    const upFor = 600 + Math.random()*900;
+    const upFor = 650 + Math.random()*850;
     const to = setTimeout(()=>{
       // record when this mole went down and what color it was
       const holeEl = mole.parentElement;
@@ -163,8 +225,11 @@ function startGame(){
   makeBoard();
   running = true;
   updateBestUI();
+  resetPauseState();
+  announce('Game started. Tap glowing buttons to score.');
   show(screens.game);
   startSpawning();
+  if(gameTimer) clearInterval(gameTimer);
   gameTimer = setInterval(()=>{
     timeLeft -= 1;
     timeEl.textContent = String(timeLeft);
@@ -177,16 +242,17 @@ function startGame(){
 function pauseGame(){
   if(!running) return;
   if(btnPause.dataset.paused==='1'){
-    // resume
     btnPause.textContent = 'Pause';
     btnPause.dataset.paused='0';
     startSpawning();
+    announce('Game resumed.');
     gameTimer = setInterval(()=>{timeLeft-=1;timeEl.textContent=String(timeLeft);if(timeLeft<=0)endGame();},1000);
   } else {
     btnPause.textContent = 'Resume';
     btnPause.dataset.paused='1';
     clearInterval(gameTimer);
     stopSpawning();
+    announce('Game paused.');
   }
 }
 
@@ -195,63 +261,69 @@ function endGame(){
   clearInterval(gameTimer);
   stopSpawning();
   finalScoreEl.textContent = String(score);
-  // high score check
   const best = loadHighScore();
   if(score > best){
     saveHighScore(score);
     if(newHighEl){ newHighEl.classList.remove('sr-only'); }
-  } else if(newHighEl){ newHighEl.classList.add('sr-only'); }
+    announce('New high score! Great job.');
+    playHitSound();
+  } else {
+    if(newHighEl){ newHighEl.classList.add('sr-only'); }
+    announce(`Game over. Final score ${score}.`);
+  }
   updateBestUI();
   show(screens.score);
 }
 
 function handleHit(e){
-  const t = e.target;
-  if(!t.classList.contains('mole')) return;
+  const target = e.target;
+  const hole = target.closest('.hole');
+  if(!hole) return;
+  const mole = hole.querySelector('.mole');
+  if(!mole) return;
   // if not lit/up, it's a white button — penalty
-  if(!t.classList.contains('up')){
-    // unlit (white) button pressed — check if it just turned off from red/yellow
-    const hole = t.parentElement;
+  if(!mole.classList.contains('up')){
     let forgive = false;
-    if(hole && hole.dataset && hole.dataset.lastDown && hole.dataset.lastColor){
+    if(hole.dataset && hole.dataset.lastDown && hole.dataset.lastColor){
       const lastDown = Number(hole.dataset.lastDown || 0);
       const lastColor = hole.dataset.lastColor;
       const age = Date.now() - lastDown;
       if((lastColor === 'red' || lastColor === 'yellow') && age >=0 && age <= 500){
-        // within grace period — forgive accidental press
         forgive = true;
       }
     }
     if(forgive){
-      // optional tiny visual feedback for forgiven press
-      t.classList.add('hit');
-      setTimeout(()=>t.classList.remove('hit'),120);
+      mole.classList.add('hit');
+      announce('Nice, forgiven accidental tap.');
+      setTimeout(()=>mole.classList.remove('hit'),120);
       return;
     }
-    // apply regular penalty
     score -= 2;
     scoreEl.textContent = String(score);
-    t.classList.add('miss');
-    setTimeout(()=>t.classList.remove('miss'),200);
-    vibrateShort();
+    announce('Missed. Minus two points.');
+    mole.classList.add('miss');
+    setTimeout(()=>mole.classList.remove('miss'),200);
+    playMissSound();
+    if(navigator.vibrate) navigator.vibrate([20,20,20]);
     return;
   }
-  const color = t.getAttribute('data-color');
+  const color = mole.getAttribute('data-color');
   if(color === 'purple'){
-    // purple is a penalty but smaller than before
     score -= 4;
+    announce('Oops! Purple penalty. Minus four points.');
+    playPenaltySound();
+    if(navigator.vibrate) navigator.vibrate([30,40,30]);
   } else if(color === 'red' || color === 'yellow'){
     score += 1;
+    announce('Hit! One point.');
+    playHitSound();
+    vibrateShort();
   }
-  // update UI
   scoreEl.textContent = String(score);
-  t.classList.add('hit');
-  t.classList.remove('up');
-  t.classList.remove('red','yellow','purple');
-  t.removeAttribute('data-color');
-  setTimeout(()=>t.classList.remove('hit'),120);
-  playHitSound();
-  vibrateShort();
+  mole.classList.add('hit');
+  mole.classList.remove('up','red','yellow','purple');
+  mole.removeAttribute('data-color');
+  setTimeout(()=>mole.classList.remove('hit'),120);
 }
 
 function highlightColorIndicator(color){
@@ -269,11 +341,25 @@ startBtn.addEventListener('click', ()=>{
   startGame();
 });
 playAgain.addEventListener('click', ()=>startGame());
-btnQuit.addEventListener('click', ()=>{ stopSpawning(); clearInterval(gameTimer); show(screens.splash); });
+btnQuit.addEventListener('click', ()=>{ resetPauseState(); stopSpawning(); clearInterval(gameTimer); announce('Returning to menu.'); show(screens.splash); });
+if(scoreHome){ scoreHome.addEventListener('click', ()=>{ resetPauseState(); stopSpawning(); clearInterval(gameTimer); announce('Returning to menu.'); show(screens.splash); }); }
 btnPause.addEventListener('click', pauseGame);
 board.addEventListener('click', handleHit);
+board.addEventListener('keydown', (e)=>{
+  if((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('mole')){
+    e.preventDefault();
+    handleHit({target:e.target, preventDefault:()=>{}});
+  }
+});
 // also support touch
-board.addEventListener('touchstart', (e)=>{ const touch = e.changedTouches[0]; const el = document.elementFromPoint(touch.clientX,touch.clientY); if(el) handleHit({target:el,preventDefault:()=>{}}); }, {passive:true});
+board.addEventListener('touchstart', (e)=>{
+  const touch = e.changedTouches[0];
+  const el = document.elementFromPoint(touch.clientX,touch.clientY);
+  if(el){
+    e.preventDefault();
+    handleHit({target:el, preventDefault:()=>{}});
+  }
+}, {passive:false});
 
 // create initial board
 makeBoard();
@@ -284,4 +370,5 @@ window.addEventListener('orientationchange', ()=>makeBoard());
 
 // set best score on load
 updateBestUI();
+loadAppVersion();
 

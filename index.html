@@ -20,15 +20,16 @@
 
     <section id="game" class="screen">
       <header class="game-header">
-        <div class="score">Score: <span id="score">0</span></div>
-        <div class="timer">Time: <span id="time">30</span>s</div>
+        <div class="score" aria-live="polite">Score: <span id="score">0</span></div>
+        <div class="timer" aria-live="polite">Time: <span id="time">30</span>s</div>
         <div class="lights" aria-hidden="true">
           <div class="light-item"><span class="light red"></span><small>Red +1</small></div>
           <div class="light-item"><span class="light yellow"></span><small>Yellow +1</small></div>
           <div class="light-item"><span class="light purple"></span><small>Purple -5</small></div>
         </div>
       </header>
-      <div id="board" class="board" aria-live="polite"></div>
+      <div id="game-status" class="sr-only" role="status" aria-live="polite"></div>
+      <div id="board" class="board" aria-live="polite" aria-label="Game board. Tap a glowing tile." aria-describedby="game-status"></div>
       <div class="controls">
         <button id="btn-pause">Pause</button>
         <button id="btn-quit">Quit</button>
@@ -41,12 +42,13 @@
       <div class="final-score" id="final-score">0</div>
       <div class="score-actions">
         <button id="play-again">Play Again</button>
+        <button id="score-home" class="secondary">Menu</button>
         <a id="deploy-link" href="/zozzo" class="link">Open on site</a>
       </div>
     </section>
   </div>
 
   <script src="js/game.js" defer></script>
-  <footer class="site-footer">v0.03</footer>
+  <footer id="app-version" class="site-footer">v0.04</footer>
 </body>
 </html>

@@ -73,4 +73,4 @@ The goal is to build the Claude-designed Zozzo game experience, ship a polished 
 - Run the app on real mobile devices.
 
 ## Current version
-- `v0.03`
+- `v0.05`
