@@ -199,7 +199,8 @@ function handleHit(e){
   if(!t.classList.contains('mole')) return;
   // if not lit/up, it's a white button — penalty
   if(!t.classList.contains('up')){
-    score -= 1;
+    // unlit (white) button pressed — penalty
+    score -= 2;
     scoreEl.textContent = String(score);
     t.classList.add('miss');
     setTimeout(()=>t.classList.remove('miss'),200);
@@ -208,7 +209,8 @@ function handleHit(e){
   }
   const color = t.getAttribute('data-color');
   if(color === 'purple'){
-    score -= 5;
+    // purple is a penalty but smaller than before
+    score -= 4;
   } else if(color === 'red' || color === 'yellow'){
     score += 1;
   }
