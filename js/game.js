@@ -131,6 +131,15 @@ function popMole(){
     highlightColorIndicator(color);
     const upFor = 600 + Math.random()*900;
     const to = setTimeout(()=>{
+      // record when this mole went down and what color it was
+      const holeEl = mole.parentElement;
+      const ts = Date.now();
+      if(holeEl){
+        holeEl.dataset.lastDown = String(ts);
+        holeEl.dataset.lastColor = color; // red|yellow|purple
+        // clear lastColor after 2s
+        setTimeout(()=>{ try{ delete holeEl.dataset.lastColor }catch(e){} }, 2000);
+      }
       mole.classList.remove('up','red','yellow','purple');
       mole.removeAttribute('data-color');
     }, upFor);
@@ -201,7 +210,25 @@ function handleHit(e){
   if(!t.classList.contains('mole')) return;
   // if not lit/up, it's a white button — penalty
   if(!t.classList.contains('up')){
-    // unlit (white) button pressed — penalty
+    // unlit (white) button pressed — check if it just turned off from red/yellow
+    const hole = t.parentElement;
+    let forgive = false;
+    if(hole && hole.dataset && hole.dataset.lastDown && hole.dataset.lastColor){
+      const lastDown = Number(hole.dataset.lastDown || 0);
+      const lastColor = hole.dataset.lastColor;
+      const age = Date.now() - lastDown;
+      if((lastColor === 'red' || lastColor === 'yellow') && age >=0 && age <= 500){
+        // within grace period — forgive accidental press
+        forgive = true;
+      }
+    }
+    if(forgive){
+      // optional tiny visual feedback for forgiven press
+      t.classList.add('hit');
+      setTimeout(()=>t.classList.remove('hit'),120);
+      return;
+    }
+    // apply regular penalty
     score -= 2;
     scoreEl.textContent = String(score);
     t.classList.add('miss');
