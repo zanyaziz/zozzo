@@ -4,25 +4,61 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
   <title>Zozzo — Bop-a-Mole</title>
-  <link rel="stylesheet" href="css/style.css">
+  <base href="/zozzo/">
+  <link rel="stylesheet" href="/zozzo/css/style.css">
 </head>
 <body>
   <div id="app">
-    <section id="splash" class="screen active">
-      <h1 class="title">Zozzo</h1>
-      <p class="subtitle">Choose a game</p>
-      <div class="highscore">Best: <span id="best-score">0</span></div>
-      <div class="game-list">
-        <button id="start-bop" class="game-btn">Bop-a-Mole</button>
+    <section id="splash" class="screen active splash-screen" aria-label="Zozzo game selection">
+      <div class="splash-top">
+        <div class="brand-pill">
+          <span class="brand-mark">Z</span>
+          <div>
+            <h1 class="title">Zozzo</h1>
+            <p class="subtitle">Playroom Pop</p>
+          </div>
+        </div>
+        <div class="highscore">Best score: <span id="best-score">0</span></div>
       </div>
-      <p class="small">Tap Start to play — optimized for mobile.</p>
+      <div class="hero-copy">Choose an activity on the Zozzo device. Bop-a-Mole is ready to play now.</div>
+      <div class="game-cards" role="list">
+        <button id="start-bop" class="game-card active" data-game="bop" role="listitem">
+          <div>
+            <div class="card-title">Bop-a-Mole</div>
+            <div class="card-subtitle">Tap glowing buttons before time runs out.</div>
+          </div>
+          <span class="card-badge">Play</span>
+        </button>
+        <button class="game-card disabled" data-game="memory" disabled role="listitem" aria-disabled="true">
+          <div>
+            <div class="card-title">Memory</div>
+            <div class="card-subtitle">Coming soon.</div>
+          </div>
+          <span class="card-badge">Soon</span>
+        </button>
+        <button class="game-card disabled" data-game="music" disabled role="listitem" aria-disabled="true">
+          <div>
+            <div class="card-title">Music Maker</div>
+            <div class="card-subtitle">Coming soon.</div>
+          </div>
+          <span class="card-badge">Soon</span>
+        </button>
+      </div>
+      <p class="small">When Bop-a-Mole starts, tap glowing tiles fast and avoid purple penalties.</p>
     </section>
 
     <section id="game" class="screen">
       <header class="game-header">
-        <div class="score" aria-live="polite">Score: <span id="score">0</span></div>
-        <div class="timer" aria-live="polite">Time: <span id="time">30</span>s</div>
-        <div class="lights" aria-hidden="true">
+        <div class="game-meta">
+          <div id="game-title" class="game-title">Bop-a-Mole</div>
+          <div class="game-prompt">Tap a glowing button to score points.</div>
+        </div>
+        <div class="hud-group">
+          <div class="score" aria-live="polite">Score: <span id="score">0</span></div>
+          <div class="timer" aria-live="polite">Time: <span id="time">30</span>s</div>
+        </div>
+      </header>
+      <div class="lights" aria-hidden="true">
           <div class="light-item"><span class="light red"></span><small>Red +1</small></div>
           <div class="light-item"><span class="light yellow"></span><small>Yellow +1</small></div>
           <div class="light-item"><span class="light purple"></span><small>Purple -5</small></div>
@@ -48,7 +84,7 @@
     </section>
   </div>
 
-  <script src="js/game.js" defer></script>
+  <script src="/zozzo/js/game.js" defer></script>
   <footer id="app-version" class="site-footer">v0.04</footer>
 </body>
 </html>

@@ -9,6 +9,7 @@ const screens = {
 };
 
 const startBtn = qs('#start-bop');
+const gameCards = qsa('.game-card');
 const board = qs('#board');
 const scoreEl = qs('#score');
 const timeEl = qs('#time');
@@ -21,6 +22,7 @@ const playAgain = qs('#play-again');
 const scoreHome = qs('#score-home');
 const btnQuit = qs('#btn-quit');
 const btnPause = qs('#btn-pause');
+const gameTitle = qs('#game-title');
 
 let score = 0;
 let timeLeft = 30;
@@ -116,6 +118,22 @@ function updateBestUI(){
   if(bestScoreEl) bestScoreEl.textContent = String(best);
 }
 
+const GAMES = {
+  bop: { label: 'Bop-a-Mole' }
+};
+
+function selectGame(gameId){
+  const game = GAMES[gameId] || GAMES.bop;
+  if(gameTitle) gameTitle.textContent = game.label;
+  gameCards.forEach(card => {
+    if(card.dataset.game === gameId){
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
+}
+
 function loadAppVersion(){
   if(!versionEl) return;
   fetch('version.json')
@@ -139,13 +157,39 @@ function makeBoard(){
   const count = 10;
   const rows = Math.ceil(count / cols);
   board.innerHTML = '';
-  board.style.gridTemplateColumns = `repeat(${cols},1fr)`;
-  board.style.gridTemplateRows = `repeat(${rows},1fr)`;
-  board.style.maxWidth = portrait ? '92vw' : '96vw';
+
+  // compute available container width/height
+  const gap = 10; // matches CSS gap:10px
+  const containerPadding = 48; // left+right padding allowance
+  const maxBoardWidth = Math.min(window.innerWidth - 24, 760);
+  // estimate header/footer heights to reserve vertical space
+  const headerEl = screens.game ? screens.game.querySelector('.game-header') : null;
+  const controlsEl = screens.game ? screens.game.querySelector('.controls') : null;
+  const headerH = headerEl ? headerEl.getBoundingClientRect().height : 0;
+  const controlsH = controlsEl ? controlsEl.getBoundingClientRect().height : 64;
+  const reservedV = headerH + controlsH + 120; // extra for margins/safe areas
+  const availableW = Math.max(320, maxBoardWidth - containerPadding);
+  const availableH = Math.max(240, window.innerHeight - reservedV);
+
+  // compute ideal square cell size so grid fits in both dimensions
+  const cellW = Math.floor((availableW - (cols - 1) * gap) / cols);
+  const cellH = Math.floor((availableH - (rows - 1) * gap) / rows);
+  const cell = Math.max(56, Math.min(cellW, cellH)); // clamp a sensible minimum
+
+  // set explicit grid sizes so we can guarantee fit without scroll
+  board.style.gridTemplateColumns = `repeat(${cols}, ${cell}px)`;
+  board.style.gridTemplateRows = `repeat(${rows}, ${cell}px)`;
+  board.style.justifyContent = 'center';
+  board.style.alignContent = 'center';
+
   for(let i=0;i<count;i++){
     const hole = document.createElement('div');
     hole.className = 'hole';
     hole.dataset.index = i;
+    // override padding trick with exact sizing so we fit all cells
+    hole.style.width = `${cell}px`;
+    hole.style.height = `${cell}px`;
+    hole.style.paddingTop = '0';
     const mole = document.createElement('div');
     mole.className = 'mole';
     mole.setAttribute('role','button');
@@ -153,6 +197,11 @@ function makeBoard(){
     mole.setAttribute('aria-pressed','false');
     hole.appendChild(mole);
     board.appendChild(hole);
+  }
+
+  // If portrait on a narrow device, suggest rotating for best play
+  if(portrait && window.innerWidth <= 540){
+    announce('For best play, rotate your device to landscape.');
   }
 }
 
@@ -338,7 +387,17 @@ function highlightColorIndicator(color){
 // event wiring
 startBtn.addEventListener('click', ()=>{
   ensureAudio();
+  selectGame('bop');
   startGame();
+});
+gameCards.forEach(card => {
+  card.addEventListener('click', () => {
+    const selected = card.dataset.game;
+    if(selected === 'bop'){
+      selectGame('bop');
+      startGame();
+    }
+  });
 });
 playAgain.addEventListener('click', ()=>startGame());
 btnQuit.addEventListener('click', ()=>{ resetPauseState(); stopSpawning(); clearInterval(gameTimer); announce('Returning to menu.'); show(screens.splash); });
@@ -363,6 +422,7 @@ board.addEventListener('touchstart', (e)=>{
 
 // create initial board
 makeBoard();
+selectGame('bop');
 
 // adapt board on resize/orientation
 window.addEventListener('resize', ()=>makeBoard());
