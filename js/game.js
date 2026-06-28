@@ -74,9 +74,11 @@ function updateBestUI(){
 function makeBoard(){
   // always render exactly 10 buttons; choose columns responsively
   const w = window.innerWidth;
-  let cols = 4;
-  if(w < 420) cols = 3;
-  else if(w >= 900) cols = 5;
+  const h = window.innerHeight;
+  const portrait = h > w;
+  // if portrait (mobile), use 5 columns to form 2 rows of 5
+  let cols = portrait ? 5 : 4;
+  if(w >= 900) cols = 5; // wide desktop
   const count = 10;
   board.innerHTML = '';
   board.style.gridTemplateColumns = `repeat(${cols},1fr)`;
@@ -100,10 +102,10 @@ function popMole(){
   const holes = qsa('.hole');
   if(holes.length===0) return;
   // pick 1-2 unique holes that are currently unlit (keep "few" lit)
-  const available = holes.filter(h=>{
-    const m = h.querySelector('.mole');
-    return m && !m.classList.contains('up');
-  });
+    const available = holes.filter(h=>{
+      const m = h.querySelector('.mole');
+      return m && !m.classList.contains('up');
+    });
   if(available.length===0) return;
   const maxCount = Math.min(2, available.length);
   const count = 1 + randomInt(maxCount); // 1..maxCount -> 1 or 2
